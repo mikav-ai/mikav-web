@@ -24,12 +24,12 @@ export function ConsoleSidebar() {
 
   return (
     <aside
-      className={`flex flex-col border-r border-gray-200 bg-gray-50 transition-all duration-200 ${
+      className={`flex flex-col shrink-0 border-r border-gray-200 bg-gray-50 transition-all duration-200 ${
         collapsed ? "w-16" : "w-60"
       }`}
     >
       {/* Header */}
-      <div className={`flex items-center h-14 px-3 ${collapsed ? "justify-center" : ""}`}>
+      <div className={`flex items-center h-14 shrink-0 px-3 ${collapsed ? "justify-center" : ""}`}>
         {!collapsed && (
           <>
             <Image

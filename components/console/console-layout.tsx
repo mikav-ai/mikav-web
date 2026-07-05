@@ -8,11 +8,11 @@ import { SettingsDialog } from "./pages/settings";
 export function ConsoleLayout({ children }: { children: React.ReactNode }) {
   return (
     <Suspense fallback={null}>
-      <div className="flex h-full min-h-screen">
+      <div className="fixed inset-0 flex overflow-hidden bg-white">
         <ConsoleSidebar />
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           <ConsoleHeader />
-          <main className="flex-1 p-6">{children}</main>
+          <main className="flex-1 min-h-0 overflow-hidden">{children}</main>
         </div>
         <SettingsDialog />
       </div>
