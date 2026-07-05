@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function SettingsPage() {
-  redirect("/console/settings/profile");
+  redirect("/console/chat?settings=profile");
 }

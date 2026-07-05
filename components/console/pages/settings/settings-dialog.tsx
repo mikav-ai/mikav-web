@@ -12,11 +12,7 @@ const settingsPages: Record<string, { title: string }> = {
   billing: { title: "Billing" },
 };
 
-export function SettingsDialog({
-  children,
-}: {
-  children?: React.ReactNode;
-}) {
+export function SettingsDialog() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
@@ -97,11 +93,7 @@ export function SettingsDialog({
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-6">
-            {children || (
-              <p className="text-sm text-gray-500">
-                {pageTitle} settings will appear here.
-              </p>
-            )}
+            <h3 className="text-base font-medium text-gray-900">{pageTitle}</h3>
           </div>
         </div>
       </div>

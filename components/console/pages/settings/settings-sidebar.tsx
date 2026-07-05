@@ -35,7 +35,7 @@ export function SettingsSidebar({ activeTab, onNavigate }: SettingsSidebarProps)
               onClick={() => onNavigate(tab.id)}
               className={`block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-gray-200 text-gray-900"
+                  ? "bg-primary/10 text-primary"
                   : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
               }`}
             >
@@ -50,7 +50,7 @@ export function SettingsSidebar({ activeTab, onNavigate }: SettingsSidebarProps)
             href={tab.href}
             className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
               isActive
-                ? "bg-gray-200 text-gray-900"
+                ? "bg-primary/10 text-primary"
                 : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
             }`}
           >

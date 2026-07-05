@@ -35,13 +35,16 @@ Mikav is an open-source AI copilot and open Malayalam model built for Kerala's c
 
 - Interactive chat console with conversation management
 - Dynamic chat sessions with unique IDs
-- Responsive sidebar navigation with active route highlighting
-- Light-only branded UI with Mikav primary color (#c8242b)
+- Collapsible sidebar with New Chat, Chats, and Groups navigation
+- Settings as popup dialog (triggered via URL query param)
+- Profile bar with user menu (Profile, Settings, Help, Logout)
+- Auth pages: login, signup, forgot password, reset, verify
+- Light-only branded UI with primary color (#c8242b)
 - SEO optimized with Open Graph, Twitter Cards, and JSON-LD structured data
-- Answer Engine Optimization (AEO) with llm.txt and skill.md for AI crawlers
+- Answer Engine Optimization (AEO) with llm.txt and skill.md
 - Dynamic sitemap and robots.txt generation
 - Custom 404 error page
-- shadcn/ui component library integration
+- shadcn/ui component library with skeleton loading states
 - Tailwind CSS 4 utility-first styling
 - TypeScript strict mode throughout
 
@@ -55,7 +58,7 @@ Mikav is an open-source AI copilot and open Malayalam model built for Kerala's c
 | Styling | Tailwind CSS 4 |
 | Components | shadcn/ui |
 | Icons | Lucide React |
-| Fonts | Geist Sans & Geist Mono |
+| Fonts | Google Sans |
 | Package Manager | npm |
 
 ## Getting Started
@@ -75,7 +78,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to the console chat.
+Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to the auth login page.
 
 ### Environment Variables
 
@@ -97,42 +100,50 @@ Copy `.env.example` to `.env.local` and configure:
 
 ```
 mikav-web/
-├── app/                          # Next.js App Router
+├── app/
+│   ├── auth/                     # Auth routes (login, signup, forgot, reset, verify)
 │   ├── console/                  # Console routes
 │   │   ├── chat/                 # Chat page
 │   │   │   └── [chatId]/        # Dynamic chat session
-│   │   ├── settings/            # Settings page
-│   │   └── help/                # Help page
+│   │   ├── chats/               # Chats list page
+│   │   ├── groups/              # Groups list page
+│   │   ├── help/                # Help page
+│   │   └── settings/            # Settings (redirects to popup)
 │   ├── layout.tsx               # Root layout (SEO, fonts, structured data)
 │   ├── not-found.tsx            # Custom 404 page
-│   ├── page.tsx                 # Root redirect → /console
+│   ├── page.tsx                 # Root redirect → /auth/login
 │   ├── robots.ts                # Dynamic robots.txt
 │   └── sitemap.ts               # Dynamic sitemap.xml
 ├── components/
-│   ├── console/                 # Console shell components
-│   │   ├── console-layout.tsx   # Full console layout wrapper
-│   │   ├── console-sidebar.tsx  # Sidebar navigation
+│   ├── app/                     # App shell (header, footer, layout)
+│   ├── console/
+│   │   ├── console-layout.tsx   # Console layout wrapper
+│   │   ├── console-sidebar.tsx  # Collapsible sidebar with nav
 │   │   ├── console-header.tsx   # Top header bar
-│   │   └── index.ts            # Barrel exports
-│   └── ui/                     # shadcn/ui primitives
+│   │   ├── pages/
+│   │   │   ├── chats/           # Chat components (search, list, grid, card)
+│   │   │   ├── groups/          # Group components (search, list, grid, card)
+│   │   │   └── settings/        # Settings dialog & sidebar
+│   │   └── shared/              # Shared components (profile bar)
+│   └── ui/                      # shadcn/ui primitives
 ├── lib/
-│   └── utils.ts                # Shared utilities (cn helper)
+│   └── utils.ts                 # Shared utilities (cn helper)
 ├── public/
-│   ├── icons/app/              # App icons (favicon, logo)
-│   ├── llm.txt                 # LLM-readable site description
-│   └── skill.md                # Agent instructions for AI systems
+│   ├── icons/app/               # App icons (favicon, logo)
+│   ├── llm.txt                  # LLM-readable site description
+│   └── skill.md                 # Agent instructions for AI systems
 ├── .github/
-│   ├── workflows/              # CI, CodeQL, dependency review, etc.
-│   └── labeler.yml             # PR auto-labeling config
-├── .env.example                # Environment variable template
-├── AGENTS.md                   # AI agent coding instructions
-├── CLAUDE.md                   # Claude-specific instructions
-├── CHANGELOG.md                # Release changelog
-├── CODE_OF_CONDUCT.md          # Community standards
-├── CONTRIBUTING.md             # Contribution guidelines
-├── LICENSE                     # MIT License
-├── ROADMAP.md                  # Project roadmap
-└── SECURITY.md                 # Security policy
+│   ├── workflows/               # CI, CodeQL, dependency review, etc.
+│   └── labeler.yml              # PR auto-labeling config
+├── .env.example                 # Environment variable template
+├── AGENTS.md                    # AI agent coding instructions
+├── CLAUDE.md                    # Claude-specific instructions
+├── CHANGELOG.md                 # Release changelog
+├── CODE_OF_CONDUCT.md           # Community standards
+├── CONTRIBUTING.md              # Contribution guidelines
+├── LICENSE                      # MIT License
+├── ROADMAP.md                   # Project roadmap
+└── SECURITY.md                  # Security policy
 ```
 
 ## Available Scripts
@@ -148,20 +159,23 @@ mikav-web/
 
 | Path | Description |
 |------|-------------|
-| `/` | Redirects to `/console` |
+| `/` | Redirects to `/auth/login` |
+| `/auth/login` | Sign in page |
+| `/auth/signup` | Sign up page |
+| `/auth/forgot` | Forgot password page |
+| `/auth/reset` | Reset password page |
+| `/auth/verify` | Email verification page |
 | `/console` | Redirects to `/console/chat` |
 | `/console/chat` | Main chat interface |
 | `/console/chat/[chatId]` | Individual chat session |
-| `/console/settings` | User settings |
-| `/console/help` | Help & documentation |
+| `/console/chats` | All chats list/grid |
+| `/console/groups` | All groups list/grid |
+| `/console/settings/*` | Redirects to popup dialog |
+| `?settings=profile` | Opens settings popup (any console page) |
 | `/sitemap.xml` | Auto-generated sitemap |
 | `/robots.txt` | Dynamic robots.txt |
-| `/llm.txt` | LLM-readable site info |
-| `/skill.md` | AI agent instructions |
 
 ## CI/CD & Automation
-
-The project includes GitHub Actions workflows:
 
 - **CI** — Lint and build on every push/PR to main
 - **CodeQL** — Security analysis for JavaScript/TypeScript
