@@ -3,11 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ProfileBar } from "./shared";
 
 const navItems = [
   { label: "Chat", href: "/console/chat" },
-  { label: "Settings", href: "/console/settings" },
-  { label: "Help", href: "/console/help" },
 ];
 
 export function ConsoleSidebar() {
@@ -43,6 +42,9 @@ export function ConsoleSidebar() {
           );
         })}
       </nav>
+      <div className="px-2 py-3 border-t border-gray-200">
+        <ProfileBar />
+      </div>
     </aside>
   );
 }

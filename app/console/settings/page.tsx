@@ -1,13 +1,5 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Settings",
-};
+import { redirect } from "next/navigation";
 
 export default function SettingsPage() {
-  return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
-    </div>
-  );
+  redirect("/console/settings/profile");
 }
