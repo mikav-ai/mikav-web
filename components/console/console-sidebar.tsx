@@ -15,16 +15,17 @@ export function ConsoleSidebar() {
 
   return (
     <aside className="flex flex-col w-60 border-r border-gray-200 bg-gray-50">
-      <div className="px-4 py-5">
+      <div className="flex items-center h-14 px-4 border-b border-gray-200">
         <Image
           src="/icons/app/icon-dark.png"
           alt="Mikav"
-          width={120}
-          height={32}
+          width={28}
+          height={28}
           priority
         />
+        <span className="ml-2 text-base font-semibold text-gray-900">Mikav</span>
       </div>
-      <nav className="flex-1 px-2 space-y-1">
+      <nav className="flex-1 px-2 pt-4 space-y-1">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
