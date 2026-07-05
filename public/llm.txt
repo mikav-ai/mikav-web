@@ -1,0 +1,45 @@
+# Mikav
+
+> Mikav is an open-source AI copilot and open Malayalam language model built for Kerala's creative and cultural ecosystem.
+
+## About
+
+Mikav provides open datasets and models that individuals can explore and businesses and developers can build on. It is Malayalam-first — designed with native understanding of Kerala's language, dialects, and cultural context.
+
+## Key Features
+
+- Open Malayalam language models for text generation, translation, and summarization
+- Open datasets curated from Kerala's literary, educational, and cultural heritage
+- Developer APIs for integrating Malayalam AI capabilities into applications
+- Web-based console for interactive conversations with the model
+- Community-driven development with transparent model training
+
+## Use Cases
+
+- Malayalam text generation and creative writing assistance
+- Translation between Malayalam and other languages
+- Educational content creation in Malayalam
+- Cultural content preservation and digitization
+- Business applications requiring Malayalam NLP
+
+## Technical Stack
+
+- Web: Next.js, React, TypeScript, Tailwind CSS
+- Models: Open Malayalam language models (various sizes)
+- APIs: RESTful endpoints for inference and model interaction
+- Datasets: Publicly available Malayalam text corpora
+
+## Links
+
+- Website: https://mikav.info
+- GitHub: https://github.com/mikav-ai/mikav-web
+- Documentation: https://mikav.info/docs
+
+## Contact
+
+- Email: hello@mikav.info
+- Issues: https://github.com/mikav-ai/mikav-web/issues
+
+## License
+
+MIT License — free to use, modify, and distribute.
