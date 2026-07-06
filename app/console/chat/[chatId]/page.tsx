@@ -1,10 +1,17 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { MessageInput } from "@/components/console/pages/chat/ui/message-input";
 import { MessageList } from "@/components/console/pages/chat/ui/message-list";
 import { PromptSuggestions } from "@/components/console/pages/chat/ui/prompt-suggestions";
 import type { Message } from "@/components/console/pages/chat/ui/chat-message";
+import {
+  getChat,
+  listMessages,
+  addMessage,
+  updateChatTitle,
+} from "@/lib/supabase/chats";
 
 const suggestions = [
   "What is Mikav?",
@@ -14,63 +21,176 @@ const suggestions = [
 ];
 
 export default function ChatIdPage() {
+  const params = useParams<{ chatId: string }>();
+  const router = useRouter();
+  const chatId = params.chatId;
+
   const [input, setInput] = useState("");
   const [files, setFiles] = useState<File[] | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  const respond = useCallback(async (content: string) => {
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content,
-      createdAt: new Date(),
-    };
+  useEffect(() => {
+    let active = true;
 
-    const nextMessages = [...messages, userMessage];
-    setMessages(nextMessages);
-    setIsGenerating(true);
+    async function load() {
+      setLoading(true);
+      try {
+        const chat = await getChat(chatId);
+        if (!chat) {
+          if (active) setNotFound(true);
+          return;
+        }
 
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: nextMessages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
-      });
+        const rows = await listMessages(chatId);
+        if (!active) return;
 
-      const data = await res.json();
+        const loaded: Message[] = rows.map((row) => ({
+          id: row.id,
+          role: row.role,
+          content: row.content,
+          createdAt: new Date(row.created_at),
+        }));
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: res.ok
-            ? data.content || "No response received."
-            : `Error: ${data.error || "Something went wrong."}`,
-          createdAt: new Date(),
-        },
-      ]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: "Failed to reach Mikav. Please try again.",
-          createdAt: new Date(),
-        },
-      ]);
-    } finally {
-      setIsGenerating(false);
+        setMessages(loaded);
+        setLoading(false);
+
+        // If the chat was just created with a pending first user message
+        // (no assistant reply yet), generate the response now.
+        const last = loaded.at(-1);
+        if (last?.role === "user") {
+          setIsGenerating(true);
+          try {
+            const res = await fetch("/api/chat", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                messages: loaded.map((m) => ({
+                  role: m.role,
+                  content: m.content,
+                })),
+              }),
+            });
+            const data = await res.json();
+            const assistantContent = res.ok
+              ? data.content || "No response received."
+              : `Error: ${data.error || "Something went wrong."}`;
+
+            if (!active) return;
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: crypto.randomUUID(),
+                role: "assistant",
+                content: assistantContent,
+                createdAt: new Date(),
+              },
+            ]);
+
+            if (res.ok) {
+              await addMessage(chatId, "assistant", assistantContent);
+            }
+          } catch {
+            if (active) {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  id: crypto.randomUUID(),
+                  role: "assistant",
+                  content: "Failed to reach Mikav. Please try again.",
+                  createdAt: new Date(),
+                },
+              ]);
+            }
+          } finally {
+            if (active) setIsGenerating(false);
+          }
+        }
+        return;
+      } catch (error) {
+        console.error("Failed to load chat:", error);
+        if (active) setNotFound(true);
+      } finally {
+        if (active) setLoading(false);
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages]);
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, [chatId]);
+
+  const respond = useCallback(
+    async (content: string) => {
+      const isFirstMessage = messages.length === 0;
+
+      const userMessage: Message = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content,
+        createdAt: new Date(),
+      };
+
+      const nextMessages = [...messages, userMessage];
+      setMessages(nextMessages);
+      setIsGenerating(true);
+
+      try {
+        await addMessage(chatId, "user", content);
+
+        if (isFirstMessage) {
+          const title = content.slice(0, 60);
+          updateChatTitle(chatId, title).catch(() => {});
+        }
+
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: nextMessages.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+          }),
+        });
+
+        const data = await res.json();
+        const assistantContent = res.ok
+          ? data.content || "No response received."
+          : `Error: ${data.error || "Something went wrong."}`;
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: assistantContent,
+            createdAt: new Date(),
+          },
+        ]);
+
+        if (res.ok) {
+          await addMessage(chatId, "assistant", assistantContent);
+        }
+      } catch {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: "Failed to reach Mikav. Please try again.",
+            createdAt: new Date(),
+          },
+        ]);
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    [chatId, messages]
+  );
 
   const handleSubmit = (event?: { preventDefault?: () => void }) => {
     event?.preventDefault?.();
@@ -86,6 +206,27 @@ export default function ChatIdPage() {
     },
     [respond]
   );
+
+  if (loading) {
+    return <div className="flex h-full items-center justify-center" />;
+  }
+
+  if (notFound) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3">
+        <h2 className="text-xl font-semibold text-gray-900">Chat not found</h2>
+        <p className="text-sm text-gray-500">
+          This chat doesn&apos;t exist or you don&apos;t have access to it.
+        </p>
+        <button
+          onClick={() => router.push("/console/chats")}
+          className="text-sm text-primary hover:underline"
+        >
+          Back to Chats
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col">

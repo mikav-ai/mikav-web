@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -12,8 +16,52 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PasswordInput } from "@/components/ui/password-input";
+import { createClient } from "@/lib/supabase/client";
 
 export default function SignupPage() {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: name },
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.session) {
+        router.push("/console/chat");
+        router.refresh();
+      } else {
+        router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to sign up.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="text-center">
@@ -21,13 +69,15 @@ export default function SignupPage() {
         <CardDescription>Get started with Mikav</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input
               id="name"
               type="text"
               placeholder="Your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
             />
           </div>
@@ -37,6 +87,8 @@ export default function SignupPage() {
               id="email"
               type="email"
               placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
@@ -45,6 +97,9 @@ export default function SignupPage() {
             <PasswordInput
               id="password"
               placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={6}
               required
             />
           </div>
@@ -53,6 +108,9 @@ export default function SignupPage() {
             <PasswordInput
               id="confirm-password"
               placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              minLength={6}
               required
             />
           </div>
@@ -60,17 +118,20 @@ export default function SignupPage() {
             <Checkbox id="terms" className="mt-0.5" required />
             <Label htmlFor="terms" className="text-sm font-normal leading-snug">
               I agree to the{" "}
-              <Link href="/terms" className="text-primary hover:underline">
+              <Link href="/legal/terms" className="text-primary hover:underline">
                 Terms of Service
               </Link>{" "}
               and{" "}
-              <Link href="/privacy" className="text-primary hover:underline">
+              <Link href="/legal/privacy" className="text-primary hover:underline">
                 Privacy Policy
               </Link>
             </Label>
           </div>
-          <Button type="submit" className="w-full">
-            Create account
+
+          {error && <p className="text-sm text-destructive">{error}</p>}
+
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Creating account..." : "Create account"}
           </Button>
         </form>
       </CardContent>

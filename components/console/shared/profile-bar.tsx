@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { User, Settings, HelpCircle, LogOut } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 interface ProfileBarProps {
   collapsed?: boolean;
@@ -12,7 +13,15 @@ export function ProfileBar({ collapsed = false }: ProfileBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setEmail(data.user?.email ?? null);
+    });
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -56,9 +65,12 @@ export function ProfileBar({ collapsed = false }: ProfileBarProps) {
     {
       label: "Logout",
       icon: LogOut,
-      onClick: () => {
+      onClick: async () => {
         setOpen(false);
+        const supabase = createClient();
+        await supabase.auth.signOut();
         router.push("/auth/login");
+        router.refresh();
       },
     },
   ];
@@ -75,7 +87,9 @@ export function ProfileBar({ collapsed = false }: ProfileBarProps) {
           <User size={16} />
         </div>
         {!collapsed && (
-          <span className="flex-1 text-left truncate">User</span>
+          <span className="flex-1 text-left truncate">
+            {email ?? "Account"}
+          </span>
         )}
       </button>
 

@@ -13,9 +13,10 @@ interface Chat {
 interface ChatGridProps {
   chats?: Chat[];
   loading?: boolean;
+  onDelete?: (id: string) => void;
 }
 
-export function ChatGrid({ chats = [], loading = false }: ChatGridProps) {
+export function ChatGrid({ chats = [], loading = false, onDelete }: ChatGridProps) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -41,7 +42,7 @@ export function ChatGrid({ chats = [], loading = false }: ChatGridProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {chats.map((chat) => (
-        <ChatCard key={chat.id} {...chat} />
+        <ChatCard key={chat.id} {...chat} onDelete={onDelete} />
       ))}
     </div>
   );

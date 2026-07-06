@@ -1,12 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { ChatSearch, ChatList, ChatGrid } from "@/components/console/pages/chats";
 import { LayoutList, LayoutGrid } from "lucide-react";
+import { listChats, deleteChat, type ChatRow } from "@/lib/supabase/chats";
+
+function formatTimestamp(iso: string) {
+  const date = new Date(iso);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
 export default function ChatsPage() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"list" | "grid">("list");
+  const [chats, setChats] = useState<ChatRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    listChats()
+      .then((rows) => {
+        if (active) setChats(rows);
+      })
+      .catch((error) => {
+        console.error("Failed to load chats:", error);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleDelete = useCallback(async (id: string) => {
+    setChats((prev) => prev.filter((c) => c.id !== id));
+    try {
+      await deleteChat(id);
+    } catch (error) {
+      console.error("Failed to delete chat:", error);
+    }
+  }, []);
+
+  const filteredChats = useMemo(() => {
+    const mapped = chats.map((chat) => ({
+      id: chat.id,
+      title: chat.title,
+      timestamp: formatTimestamp(chat.updated_at),
+    }));
+
+    if (!search.trim()) return mapped;
+    const query = search.toLowerCase();
+    return mapped.filter((chat) => chat.title.toLowerCase().includes(query));
+  }, [chats, search]);
 
   return (
     <div className="h-full overflow-y-auto">
@@ -37,7 +87,11 @@ export default function ChatsPage() {
             </button>
           </div>
         </div>
-        {view === "list" ? <ChatList loading={false} /> : <ChatGrid loading={false} />}
+        {view === "list" ? (
+          <ChatList chats={filteredChats} loading={loading} onDelete={handleDelete} />
+        ) : (
+          <ChatGrid chats={filteredChats} loading={loading} onDelete={handleDelete} />
+        )}
       </div>
     </div>
   );

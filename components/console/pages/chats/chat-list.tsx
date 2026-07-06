@@ -13,9 +13,10 @@ interface Chat {
 interface ChatListProps {
   chats?: Chat[];
   loading?: boolean;
+  onDelete?: (id: string) => void;
 }
 
-export function ChatList({ chats = [], loading = false }: ChatListProps) {
+export function ChatList({ chats = [], loading = false, onDelete }: ChatListProps) {
   if (loading) {
     return (
       <div className="space-y-3">
@@ -41,7 +42,7 @@ export function ChatList({ chats = [], loading = false }: ChatListProps) {
   return (
     <div className="space-y-3">
       {chats.map((chat) => (
-        <ChatCard key={chat.id} {...chat} />
+        <ChatCard key={chat.id} {...chat} onDelete={onDelete} />
       ))}
     </div>
   );

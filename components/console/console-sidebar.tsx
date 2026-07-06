@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { PanelLeftClose, PanelLeftOpen, Plus, MessageSquare, Users } from "lucide-react";
 import { ProfileBar } from "./shared";
+import { createChat } from "@/lib/supabase/chats";
 
 const navItems = [
   { label: "Chats", href: "/console/chats", icon: MessageSquare },
@@ -16,10 +17,19 @@ export function ConsoleSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [creating, setCreating] = useState(false);
 
-  const handleNewChat = () => {
-    const chatId = crypto.randomUUID();
-    router.push(`/console/chat/${chatId}`);
+  const handleNewChat = async () => {
+    if (creating) return;
+    setCreating(true);
+    try {
+      const chat = await createChat();
+      router.push(`/console/chat/${chat.id}`);
+    } catch (error) {
+      console.error("Failed to create chat:", error);
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -57,13 +67,14 @@ export function ConsoleSidebar() {
       <div className="px-2 pt-4">
         <button
           onClick={handleNewChat}
+          disabled={creating}
           title="New Chat"
-          className={`flex items-center w-full rounded-md border border-primary bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors ${
+          className={`flex items-center w-full rounded-md border border-primary bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60 ${
             collapsed ? "justify-center px-2 py-2" : "gap-2 px-3 py-2"
           }`}
         >
           <Plus size={16} />
-          {!collapsed && <span>New Chat</span>}
+          {!collapsed && <span>{creating ? "Creating..." : "New Chat"}</span>}
         </button>
       </div>
 
