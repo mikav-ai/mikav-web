@@ -3,6 +3,10 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { SettingsSidebar } from "./settings-sidebar";
+import { FontSwitch } from "./preferences/font-switch";
+import { Profile } from "./profile/profile";
+import { Sessions } from "./account/sessions";
+import { Plan } from "./billing/plan";
 
 const settingsPages: Record<string, { title: string }> = {
   profile: { title: "Profile" },
@@ -93,7 +97,13 @@ export function SettingsDialog() {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-6">
-            <h3 className="text-base font-medium text-gray-900">{pageTitle}</h3>
+            {activeTab === "profile" && <Profile />}
+            {activeTab === "account" && <Sessions />}
+            {activeTab === "billing" && <Plan />}
+            {activeTab === "preferences" && <FontSwitch />}
+            {activeTab === "api" && (
+              <h3 className="text-base font-medium text-gray-900">{pageTitle}</h3>
+            )}
           </div>
         </div>
       </div>
