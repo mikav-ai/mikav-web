@@ -26,7 +26,10 @@ export function ConsoleSidebar() {
       const chat = await createChat();
       router.push(`/console/chat/${chat.id}`);
     } catch (error) {
-      console.error("Failed to create chat:", error);
+      console.error(
+        "Failed to create chat:",
+        error instanceof Error ? error.message : error
+      );
     } finally {
       setCreating(false);
     }
