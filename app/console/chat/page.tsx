@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { Globe } from "lucide-react";
 import { MessageInput } from "@/components/console/pages/chat/ui/message-input";
 import { PromptSuggestions } from "@/components/console/pages/chat/ui/prompt-suggestions";
 import { createChat, addMessage, updateChatTitle } from "@/lib/supabase/chats";
@@ -18,6 +19,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [files, setFiles] = useState<File[] | null>(null);
   const [isStarting, setIsStarting] = useState(false);
+  const [webSearch, setWebSearch] = useState(false);
 
   const startChat = useCallback(
     async (content: string) => {
@@ -27,13 +29,15 @@ export default function ChatPage() {
         const chat = await createChat(content.slice(0, 60));
         await addMessage(chat.id, "user", content);
         updateChatTitle(chat.id, content.slice(0, 60)).catch(() => {});
-        router.push(`/console/chat/${chat.id}?pending=1`);
+        router.push(
+          `/console/chat/${chat.id}?pending=1${webSearch ? "&webSearch=1" : ""}`
+        );
       } catch (error) {
         console.error("Failed to start chat:", error);
         setIsStarting(false);
       }
     },
-    [isStarting, router]
+    [isStarting, router, webSearch]
   );
 
   const handleSubmit = (event?: { preventDefault?: () => void }) => {
@@ -63,6 +67,21 @@ export default function ChatPage() {
         </div>
       </div>
       <div className="mx-auto w-full max-w-3xl px-4 pb-4">
+        <div className="mb-2 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setWebSearch((v) => !v)}
+            aria-pressed={webSearch}
+            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              webSearch
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-input text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            <Globe className="h-3.5 w-3.5" />
+            Search web
+          </button>
+        </div>
         <form onSubmit={handleSubmit}>
           <MessageInput
             value={input}

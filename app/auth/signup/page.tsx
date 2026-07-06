@@ -26,6 +26,7 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +54,7 @@ export default function SignupPage() {
         router.push("/console/chat");
         router.refresh();
       } else {
-        router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
+        setSuccess(true);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to sign up.");
@@ -61,6 +62,25 @@ export default function SignupPage() {
       setIsSubmitting(false);
     }
   };
+
+  if (success) {
+    return (
+      <Card>
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Check your email</CardTitle>
+          <CardDescription>
+            We&apos;ve sent a confirmation link to <strong>{email}</strong>.
+            Click the link to verify your account and sign in.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter className="justify-center">
+          <Link href="/auth/login" className="text-sm text-primary hover:underline">
+            Back to sign in
+          </Link>
+        </CardFooter>
+      </Card>
+    );
+  }
 
   return (
     <Card>
