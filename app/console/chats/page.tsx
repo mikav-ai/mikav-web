@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { ChatSearch, ChatList, ChatGrid } from "@/components/console/pages/chats";
 import { LayoutList, LayoutGrid } from "lucide-react";
-import { listChats, deleteChat, type ChatRow } from "@/lib/supabase/chats";
+import { listChats, deleteChat, getErrorMessage, type ChatRow } from "@/lib/supabase/chats";
 
 function formatTimestamp(iso: string) {
   const date = new Date(iso);
@@ -27,7 +27,7 @@ export default function ChatsPage() {
         if (active) setChats(rows);
       })
       .catch((error) => {
-        console.error("Failed to load chats:", error);
+        console.error("Failed to load chats:", getErrorMessage(error));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -37,12 +37,17 @@ export default function ChatsPage() {
     };
   }, []);
 
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   const handleDelete = useCallback(async (id: string) => {
-    setChats((prev) => prev.filter((c) => c.id !== id));
+    setDeleteError(null);
     try {
       await deleteChat(id);
+      setChats((prev) => prev.filter((c) => c.id !== id));
     } catch (error) {
-      console.error("Failed to delete chat:", error);
+      const message = getErrorMessage(error);
+      console.error("Failed to delete chat:", message);
+      setDeleteError(message);
     }
   }, []);
 
@@ -62,6 +67,11 @@ export default function ChatsPage() {
     <div className="h-full overflow-y-auto">
       <div className="max-w-4xl mx-auto space-y-6 p-6">
         <h2 className="text-2xl font-bold text-gray-900">Chats</h2>
+        {deleteError && (
+          <p className="text-sm text-destructive">
+            Failed to delete chat: {deleteError}
+          </p>
+        )}
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 max-w-md">
             <ChatSearch value={search} onChange={setSearch} />

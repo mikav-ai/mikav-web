@@ -1,5 +1,20 @@
 import { createClient } from "./client";
 
+/** Extracts a readable message from any error shape (Error, PostgrestError, AuthError, etc.) */
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object") {
+    const err = error as Record<string, unknown>;
+    if (typeof err.message === "string") return err.message;
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return String(error);
+    }
+  }
+  return String(error);
+}
+
 export interface ChatRow {
   id: string;
   user_id: string;

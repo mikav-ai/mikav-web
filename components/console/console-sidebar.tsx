@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { PanelLeftClose, PanelLeftOpen, Plus, MessageSquare, Users } from "lucide-react";
 import { ProfileBar } from "./shared";
-import { createChat } from "@/lib/supabase/chats";
 
 const navItems = [
   { label: "Chats", href: "/console/chats", icon: MessageSquare },
@@ -17,22 +16,11 @@ export function ConsoleSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const [creating, setCreating] = useState(false);
 
-  const handleNewChat = async () => {
-    if (creating) return;
-    setCreating(true);
-    try {
-      const chat = await createChat();
-      router.push(`/console/chat/${chat.id}`);
-    } catch (error) {
-      console.error(
-        "Failed to create chat:",
-        error instanceof Error ? error.message : error
-      );
-    } finally {
-      setCreating(false);
-    }
+  const handleNewChat = () => {
+    // Navigate to the empty chat composer. The chat row itself is only
+    // created in Supabase once the user sends their first message.
+    router.push("/console/chat");
   };
 
   return (
@@ -70,14 +58,13 @@ export function ConsoleSidebar() {
       <div className="px-2 pt-4">
         <button
           onClick={handleNewChat}
-          disabled={creating}
           title="New Chat"
-          className={`flex items-center w-full rounded-md border border-primary bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60 ${
+          className={`flex items-center w-full rounded-md border border-primary bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors ${
             collapsed ? "justify-center px-2 py-2" : "gap-2 px-3 py-2"
           }`}
         >
           <Plus size={16} />
-          {!collapsed && <span>{creating ? "Creating..." : "New Chat"}</span>}
+          {!collapsed && <span>New Chat</span>}
         </button>
       </div>
 

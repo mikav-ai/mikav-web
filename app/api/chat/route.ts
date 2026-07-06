@@ -67,7 +67,13 @@ export async function POST(request: Request) {
       );
     }
 
-    let finalMessages = messages;
+    const systemPrompt: ChatMessage = {
+      role: "system",
+      content:
+        "You are Mikav, a helpful AI assistant. Keep responses short and to the point — a few sentences or a brief list. Only go into more detail if the user explicitly asks for it. Avoid unnecessary preamble.",
+    };
+
+    let finalMessages: ChatMessage[] = [systemPrompt, ...messages];
 
     if (webSearch) {
       const lastUserMessage = [...messages]
@@ -79,9 +85,10 @@ export async function POST(request: Request) {
 
         if (searchContext) {
           finalMessages = [
+            systemPrompt,
             {
               role: "system",
-              content: `You have access to the following live web search results. Use them to give an accurate, up-to-date answer, and cite sources by URL when relevant.\n\n${searchContext}`,
+              content: `You have access to the following live web search results. Use them only if relevant to give an accurate, up-to-date answer, and cite sources by URL when you do.\n\n${searchContext}`,
             },
             ...messages,
           ];

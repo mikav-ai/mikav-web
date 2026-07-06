@@ -6,19 +6,23 @@ Our vision for Mikav — an open Malayalam AI ecosystem built in and for Kerala.
 
 - [x] Project scaffold & console shell
 - [x] Brand theming & light-mode UI
-- [ ] Chat interface with message streaming
-- [ ] Authentication (email / OAuth)
-- [ ] Basic conversation persistence
-- [ ] API integration with Mikav model endpoints
+- [x] Chat interface with AI responses (Sarvam AI)
+- [x] Authentication (email/password, magic-link confirmation)
+- [x] Conversation persistence (Supabase, multi-tenant with RLS)
+- [x] Web search grounding for chat responses (SerpApi)
+- [ ] Message streaming
+- [ ] OAuth providers (Google, GitHub)
 
 ## 🌱 Near-term (v1.0)
 
 - [ ] Malayalam language input & rendering support
 - [ ] Open Malayalam model integration (inference API)
-- [ ] Chat history & conversation management
+- [x] Chat history & conversation management
 - [ ] User settings & preferences
 - [ ] Responsive mobile layout
 - [ ] Keyboard shortcuts & accessibility
+- [ ] Groups: full functionality (currently scaffolded)
+- [ ] System prompts and knowledge base (`ai/prompts/`, `ai/knowledge/`)
 
 ## 🌳 Mid-term (v1.x)
 

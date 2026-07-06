@@ -19,6 +19,8 @@
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "remeda": "^2.39.0",
     "sarvamai": "^1.1.7",
     "shadcn": "^4.13.0",
@@ -27,6 +29,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5.20",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

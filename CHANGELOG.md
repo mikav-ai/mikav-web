@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-06
+
+### Added
+
+- Sarvam AI chat completions integration (`sarvam-30b`) via server-side `app/api/chat/route.ts`, keeping the API key secret
+- SerpApi live web search integration via `app/api/search/route.ts`; chat responses are automatically grounded with search results and cite sources
+- Full multi-tenant chat persistence backed by Supabase: `lib/supabase/chats.ts` with `createChat`, `listChats`, `getChat`, `deleteChat`, `updateChatTitle`, `listMessages`, `addMessage`
+- Real authentication: login and signup wired to `supabase.auth.signInWithPassword` / `signUp`; magic-link email confirmation flow
+- `app/auth/callback/route.ts` exchanging the magic-link auth code for a session (`exchangeCodeForSession`)
+- Forgot/reset password wired to `supabase.auth.resetPasswordForEmail` and `updateUser`
+- `proxy.ts` (Next.js 16 middleware convention) protecting `/console/*` routes, redirecting unauthenticated users to `/auth/login`
+- Chats list page (`/console/chats`) loads real chats from Supabase with search, list/grid views, and delete with inline confirm + visible error feedback
+- New Chat button navigates to the chat composer; the chat row is only created in Supabase once the first message is sent
+- Markdown rendering in chat via `react-markdown` + `remark-gfm` + `@tailwindcss/typography` (headings, lists, bold, code blocks now render properly instead of raw text)
+- Concise-by-default system prompt for chat responses
+- `getErrorMessage()` helper for readable Supabase/Postgrest error messages in the console
+- `ai/prompts/` and `ai/knowledge/` folders (scaffolded, empty) for future system prompt and knowledge base content
+- `docs/ARCHITECTURE.md` describing project structure, data flow, and conventions
+
+### Changed
+
+- "Search web" toggle removed from the chat UI — web search now runs automatically on every message
+- Chat pages show a "Welcome to Mikav" message with prompt suggestions instead of the raw chat ID
+- Chat ID is never rendered on the page — only present in the URL
+
+### Fixed
+
+- Sidebar "New Chat" no longer eagerly creates a database row before the user sends a message
+- Chat/chats error handling now surfaces the actual Supabase error message instead of an empty object
+
 ## [0.1.7] - 2026-07-07
 
 ### Added
@@ -113,7 +143,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Initial Next.js 16 project scaffold
 - React 19, TypeScript 5, Tailwind CSS 4
 
-[Unreleased]: https://github.com/mikav-ai/mikav-web/compare/v0.1.7...HEAD
+[Unreleased]: https://github.com/mikav-ai/mikav-web/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/mikav-ai/mikav-web/compare/v0.1.7...v0.2.0
 [0.1.7]: https://github.com/mikav-ai/mikav-web/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/mikav-ai/mikav-web/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/mikav-ai/mikav-web/compare/v0.1.4...v0.1.5

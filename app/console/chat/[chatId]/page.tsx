@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Globe } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import { MessageInput } from "@/components/console/pages/chat/ui/message-input";
 import { MessageList } from "@/components/console/pages/chat/ui/message-list";
 import { PromptSuggestions } from "@/components/console/pages/chat/ui/prompt-suggestions";
@@ -12,6 +11,7 @@ import {
   listMessages,
   addMessage,
   updateChatTitle,
+  getErrorMessage,
 } from "@/lib/supabase/chats";
 
 const suggestions = [
@@ -24,7 +24,6 @@ const suggestions = [
 export default function ChatIdPage() {
   const params = useParams<{ chatId: string }>();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const chatId = params.chatId;
 
   const [input, setInput] = useState("");
@@ -33,9 +32,6 @@ export default function ChatIdPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [webSearch, setWebSearch] = useState(
-    () => searchParams.get("webSearch") === "1"
-  );
 
   useEffect(() => {
     let active = true;
@@ -76,7 +72,7 @@ export default function ChatIdPage() {
                   role: m.role,
                   content: m.content,
                 })),
-                webSearch,
+                webSearch: true,
               }),
             });
             const data = await res.json();
@@ -116,7 +112,7 @@ export default function ChatIdPage() {
         }
         return;
       } catch (error) {
-        console.error("Failed to load chat:", error);
+        console.error("Failed to load chat:", getErrorMessage(error));
         if (active) setNotFound(true);
       } finally {
         if (active) setLoading(false);
@@ -160,7 +156,7 @@ export default function ChatIdPage() {
               role: m.role,
               content: m.content,
             })),
-            webSearch,
+            webSearch: true,
           }),
         });
 
@@ -251,21 +247,6 @@ export default function ChatIdPage() {
         </div>
       </div>
       <div className="mx-auto w-full max-w-3xl px-4 pb-4">
-        <div className="mb-2 flex justify-end">
-          <button
-            type="button"
-            onClick={() => setWebSearch((v) => !v)}
-            aria-pressed={webSearch}
-            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-              webSearch
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-input text-muted-foreground hover:bg-muted"
-            }`}
-          >
-            <Globe className="h-3.5 w-3.5" />
-            Search web
-          </button>
-        </div>
         <form onSubmit={handleSubmit}>
           <MessageInput
             value={input}

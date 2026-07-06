@@ -33,20 +33,23 @@ Mikav is an open-source AI copilot and open Malayalam model built for Kerala's c
 
 ## Features
 
-- Interactive chat console with conversation management
-- Dynamic chat sessions with unique IDs
+- Chat console with real-time AI responses (Sarvam AI, `sarvam-30b`)
+- Automatic web search grounding for up-to-date, cited answers (SerpApi)
+- Multi-tenant chat persistence — every chat and message is stored in Supabase, scoped to the signed-in user via Row Level Security
+- Chats list with search, list/grid views, and delete
+- Markdown rendering in chat (headings, lists, code blocks, bold/italic)
+- Real authentication: email/password login & signup, magic-link email confirmation, forgot/reset password
 - Collapsible sidebar with New Chat, Chats, and Groups navigation
-- Settings as popup dialog (triggered via URL query param)
+- Settings as a popup dialog (triggered via URL query param)
 - Profile bar with user menu (Profile, Settings, Help, Logout)
-- Auth pages: login, signup, forgot password, reset, verify
-- Light-only branded UI with primary color (#c8242b)
+- Light-only branded UI with primary color `#c8242b`
 - SEO optimized with Open Graph, Twitter Cards, and JSON-LD structured data
-- Answer Engine Optimization (AEO) with llm.txt and skill.md
+- Answer Engine Optimization (AEO) with `llm.txt` and `skill.md`
 - Dynamic sitemap and robots.txt generation
 - Custom 404 error page
 - shadcn/ui component library with skeleton loading states
 - Rich message input with file attachments, drag-and-drop, and voice recording
-- Supabase backend (auth, database, storage) with SQL migrations
+- Feedback and support request forms, stored in Supabase
 - Tailwind CSS 4 utility-first styling
 - TypeScript strict mode throughout
 
@@ -62,6 +65,9 @@ Mikav is an open-source AI copilot and open Malayalam model built for Kerala's c
 | Icons | Lucide React |
 | Fonts | Google Sans |
 | Backend | Supabase (Postgres, Auth, Storage) |
+| AI Chat | Sarvam AI (chat completions) |
+| Web Search | SerpApi |
+| Markdown | react-markdown + remark-gfm |
 | Package Manager | npm |
 
 ## Getting Started
@@ -70,6 +76,9 @@ Mikav is an open-source AI copilot and open Malayalam model built for Kerala's c
 
 - Node.js 20+
 - npm 10+
+- A [Supabase](https://supabase.com) project
+- A [Sarvam AI](https://dashboard.sarvam.ai) API key
+- A [SerpApi](https://serpapi.com) API key (optional — enables web search grounding)
 
 ### Installation
 
@@ -81,65 +90,82 @@ npm install
 npm run dev
 ```
 
+Fill in `.env.local` with your Supabase project URL/key, Sarvam API key, and SerpApi key.
+
 Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to the auth login page.
 
 ### Database setup (Supabase)
 
-Apply the SQL migrations in `supabase/migrations/` in order (01 → 03) via the Supabase SQL Editor or CLI. See [supabase/README.md](supabase/README.md) for details.
+Apply the SQL migrations in `supabase/migrations/` **in order** (`01` → `03`) via the Supabase SQL Editor or CLI. See [supabase/README.md](supabase/README.md) for details, including the schema overview and storage buckets.
+
+### Supabase dashboard configuration
+
+- **Authentication → URL Configuration**: set Site URL and add your app origin(s) to Redirect URLs (e.g. `http://localhost:3000/**`, `https://your-domain/**`)
+- **Authentication → Providers → Email**: enable "Confirm email" if you want new signups to verify via magic link before signing in
 
 ## Project Structure
 
 ```
 mikav-web/
+├── ai/
+│   ├── prompts/                  # System prompts (scaffolded, empty)
+│   └── knowledge/                # Knowledge base content (scaffolded, empty)
 ├── app/
-│   ├── auth/                     # Auth routes (login, signup, forgot, reset, verify)
-│   ├── console/                  # Console routes
-│   │   ├── chat/                 # Chat page (with MessageInput)
-│   │   │   └── [chatId]/        # Dynamic chat session
-│   │   ├── chats/               # Chats list page
-│   │   ├── groups/              # Groups list page
-│   │   ├── help/                # Help page
-│   │   └── settings/            # Settings (redirects to popup)
-│   ├── layout.tsx               # Root layout (SEO, fonts, structured data)
-│   ├── not-found.tsx            # Custom 404 page
-│   ├── page.tsx                 # Root redirect → /auth/login
-│   ├── robots.ts                # Dynamic robots.txt
-│   └── sitemap.ts               # Dynamic sitemap.xml
+│   ├── api/
+│   │   ├── chat/                 # Sarvam AI chat completions endpoint
+│   │   └── search/                # SerpApi web search endpoint
+│   ├── auth/                     # Login, signup, forgot, reset, callback
+│   ├── console/                   # Console routes
+│   │   ├── chat/                 # Chat composer
+│   │   │   └── [chatId]/        # Individual chat session
+│   │   ├── chats/                # Chats list page
+│   │   ├── groups/               # Groups list page
+│   │   ├── help/                 # Help page (support form)
+│   │   └── settings/              # Settings (redirects to popup)
+│   ├── legal/                     # Terms, privacy, cookies
+│   ├── layout.tsx                # Root layout (SEO, fonts, structured data)
+│   ├── not-found.tsx              # Custom 404 page
+│   ├── page.tsx                   # Root redirect → /auth/login
+│   ├── robots.ts                  # Dynamic robots.txt
+│   └── sitemap.ts                 # Dynamic sitemap.xml
 ├── components/
-│   ├── app/                     # App shell (header, footer, layout)
+│   ├── app/                       # Public app shell (header, footer, layout)
 │   ├── console/
-│   │   ├── console-layout.tsx   # Console layout wrapper
-│   │   ├── console-sidebar.tsx  # Collapsible sidebar with nav
-│   │   ├── console-header.tsx   # Top header bar
+│   │   ├── console-layout.tsx    # Console layout wrapper
+│   │   ├── console-sidebar.tsx   # Collapsible sidebar with nav
+│   │   ├── console-header.tsx    # Top header bar
 │   │   ├── pages/
-│   │   │   ├── chat/            # MessageInput + hooks/lib (audio, autosize)
-│   │   │   ├── chats/           # Chat components (search, list, grid, card)
-│   │   │   ├── groups/          # Group components (search, list, grid, card)
-│   │   │   └── settings/        # Settings dialog & sidebar
-│   │   └── shared/              # Shared components (profile bar, forms)
-│   └── ui/                      # shadcn/ui primitives
+│   │   │   ├── chat/             # MessageInput + hooks/lib (audio, autosize)
+│   │   │   ├── chats/            # Chat components (search, list, grid, card)
+│   │   │   ├── groups/           # Group components (search, list, grid, card)
+│   │   │   └── settings/          # Settings dialog & sidebar
+│   │   └── shared/                # Shared components (profile bar, feedback, forms)
+│   └── ui/                        # shadcn/ui primitives
+├── docs/
+│   └── ARCHITECTURE.md            # Project architecture reference
 ├── lib/
-│   ├── supabase/                # Supabase client/server/middleware
-│   └── utils.ts                 # Shared utilities (cn helper)
+│   ├── supabase/                  # Supabase client/server/middleware/chats
+│   └── utils.ts                   # Shared utilities (cn helper)
 ├── public/
-│   ├── icons/app/               # App icons (favicon, logo)
-│   ├── llm.txt                  # LLM-readable site description
-│   └── skill.md                 # Agent instructions for AI systems
+│   ├── icons/app/                 # App icons (favicon, logo)
+│   ├── llm.txt                    # LLM-readable site description
+│   └── skill.md                   # Agent instructions for AI systems
 ├── supabase/
-│   ├── migrations/              # SQL migrations (profiles, chats, groups, storage)
-│   └── README.md                # Schema & migration guide
+│   ├── migrations/                # SQL migrations (auth, database, storage)
+│   └── README.md                  # Schema & migration guide
 ├── .github/
-│   ├── workflows/               # CI, CodeQL, dependency review, etc.
-│   └── labeler.yml              # PR auto-labeling config
-├── .env.example                 # Environment variable template
-├── AGENTS.md                    # AI agent coding instructions
-├── CLAUDE.md                    # Claude-specific instructions
-├── CHANGELOG.md                 # Release changelog
-├── CODE_OF_CONDUCT.md           # Community standards
-├── CONTRIBUTING.md              # Contribution guidelines
-├── LICENSE                      # MIT License
-├── ROADMAP.md                   # Project roadmap
-└── SECURITY.md                  # Security policy
+│   ├── workflows/                 # CI, CodeQL, dependency review, etc.
+│   └── labeler.yml                # PR auto-labeling config
+├── .env.example                   # Environment variable template
+├── proxy.ts                       # Middleware: Supabase session + route protection
+├── AGENTS.md                       # AI agent coding instructions
+├── CLAUDE.md                       # Claude-specific instructions
+├── CHANGELOG.md                    # Release changelog
+├── CODE_OF_CONDUCT.md              # Community standards
+├── CONTRIBUTING.md                 # Contribution guidelines
+├── LICENSE                         # MIT License
+├── ROADMAP.md                      # Project roadmap
+└── SECURITY.md                     # Security policy
 ```
 
 ## Available Scripts
@@ -160,14 +186,17 @@ mikav-web/
 | `/auth/signup` | Sign up page |
 | `/auth/forgot` | Forgot password page |
 | `/auth/reset` | Reset password page |
-| `/auth/verify` | Email verification page |
+| `/auth/callback` | Exchanges magic-link code for a session |
 | `/console` | Redirects to `/console/chat` |
-| `/console/chat` | Main chat interface |
+| `/console/chat` | Chat composer (creates a chat on first message) |
 | `/console/chat/[chatId]` | Individual chat session |
-| `/console/chats` | All chats list/grid |
+| `/console/chats` | All chats — search, list/grid, delete |
 | `/console/groups` | All groups list/grid |
+| `/console/help` | Support request form |
 | `/console/settings/*` | Redirects to popup dialog |
 | `?settings=profile` | Opens settings popup (any console page) |
+| `/api/chat` | POST — Sarvam AI chat completions (server-side) |
+| `/api/search` | POST — SerpApi web search (server-side) |
 | `/sitemap.xml` | Auto-generated sitemap |
 | `/robots.txt` | Dynamic robots.txt |
 
@@ -180,6 +209,11 @@ mikav-web/
 - **Stale** — Marks inactive issues/PRs after 30 days
 - **Greetings** — Welcomes first-time contributors
 - **Issue Summary** — AI-generated summary on new issues
+
+## Documentation
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — project structure, data flow, conventions
+- [supabase/README.md](supabase/README.md) — database schema and migrations
 
 ## Contributing
 
