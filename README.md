@@ -45,6 +45,8 @@ Mikav is an open-source AI copilot and open Malayalam model built for Kerala's c
 - Dynamic sitemap and robots.txt generation
 - Custom 404 error page
 - shadcn/ui component library with skeleton loading states
+- Rich message input with file attachments, drag-and-drop, and voice recording
+- Supabase backend (auth, database, storage) with SQL migrations
 - Tailwind CSS 4 utility-first styling
 - TypeScript strict mode throughout
 
@@ -59,6 +61,7 @@ Mikav is an open-source AI copilot and open Malayalam model built for Kerala's c
 | Components | shadcn/ui |
 | Icons | Lucide React |
 | Fonts | Google Sans |
+| Backend | Supabase (Postgres, Auth, Storage) |
 | Package Manager | npm |
 
 ## Getting Started
@@ -95,6 +98,12 @@ Copy `.env.example` to `.env.local` and configure:
 | `DATABASE_URL` | Database connection string |
 | `MIKAV_MODEL_API_URL` | Mikav model inference endpoint |
 | `MIKAV_MODEL_API_KEY` | Mikav model API key |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable (anon) key |
+
+### Database setup (Supabase)
+
+Apply the SQL migrations in `supabase/migrations/` in order (0001 → 0006) via the Supabase SQL Editor or CLI. See [supabase/README.md](supabase/README.md) for details.
 
 ## Project Structure
 
@@ -103,7 +112,7 @@ mikav-web/
 ├── app/
 │   ├── auth/                     # Auth routes (login, signup, forgot, reset, verify)
 │   ├── console/                  # Console routes
-│   │   ├── chat/                 # Chat page
+│   │   ├── chat/                 # Chat page (with MessageInput)
 │   │   │   └── [chatId]/        # Dynamic chat session
 │   │   ├── chats/               # Chats list page
 │   │   ├── groups/              # Groups list page
@@ -121,17 +130,22 @@ mikav-web/
 │   │   ├── console-sidebar.tsx  # Collapsible sidebar with nav
 │   │   ├── console-header.tsx   # Top header bar
 │   │   ├── pages/
+│   │   │   ├── chat/            # MessageInput + hooks/lib (audio, autosize)
 │   │   │   ├── chats/           # Chat components (search, list, grid, card)
 │   │   │   ├── groups/          # Group components (search, list, grid, card)
 │   │   │   └── settings/        # Settings dialog & sidebar
-│   │   └── shared/              # Shared components (profile bar)
+│   │   └── shared/              # Shared components (profile bar, forms)
 │   └── ui/                      # shadcn/ui primitives
 ├── lib/
+│   ├── supabase/                # Supabase client/server/middleware
 │   └── utils.ts                 # Shared utilities (cn helper)
 ├── public/
 │   ├── icons/app/               # App icons (favicon, logo)
 │   ├── llm.txt                  # LLM-readable site description
 │   └── skill.md                 # Agent instructions for AI systems
+├── supabase/
+│   ├── migrations/              # SQL migrations (profiles, chats, groups, storage)
+│   └── README.md                # Schema & migration guide
 ├── .github/
 │   ├── workflows/               # CI, CodeQL, dependency review, etc.
 │   └── labeler.yml              # PR auto-labeling config

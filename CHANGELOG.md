@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-07-07
+
+### Added
+
+- Supabase integration (`@supabase/supabase-js`, `@supabase/ssr`)
+- `lib/supabase/` with `client.ts` (browser), `server.ts` (server), `middleware.ts` (session refresh), barrel `index.ts`
+- SQL migrations in `supabase/migrations/`: profiles (with auto-assigned unique `user_id`), updated_at trigger, chats/messages, groups/group_members, feedback/support_requests, storage buckets (avatars, attachments, user-uploads)
+- `supabase/README.md` documenting schema, buckets, and how to apply migrations
+- `MessageInput` component (shadcn-chatbot-kit) in `components/console/pages/chat/ui/` with `FilePreview`, `InterruptPrompt`, `AudioVisualizer`, `use-audio-recording`, `use-autosize-textarea` hooks, and `audio-utils` lib
+- Wired `MessageInput` into `/console/chat` and `/console/chat/[chatId]` pages
+- `.gitkeep` placeholders for empty `chat/ui`, `chat/lib`, `chat/hooks` folders
+
+### Changed
+
+- Auth layout (`AppLayout`) centers content vertically between header and footer
+- Chat and Chat[chatId] pages simplified to heading + message input
+
+### Removed
+
+- Full chat UI kit (Chat, ChatMessage, MessageList, PromptSuggestions, MarkdownRenderer, TypingIndicator, CopyButton) — reverted to minimal heading-only pages with just MessageInput
+
 ## [0.1.6] - 2026-07-07
 
 ### Added
@@ -92,7 +113,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Initial Next.js 16 project scaffold
 - React 19, TypeScript 5, Tailwind CSS 4
 
-[Unreleased]: https://github.com/mikav-ai/mikav-web/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/mikav-ai/mikav-web/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/mikav-ai/mikav-web/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/mikav-ai/mikav-web/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/mikav-ai/mikav-web/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/mikav-ai/mikav-web/compare/v0.1.3...v0.1.4
