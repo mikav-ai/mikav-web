@@ -12,10 +12,24 @@ import {
 } from "@/lib/supabase/chats";
 
 const suggestions = [
-  "What is Mikav?",
-  "Tell me about Kerala's culture",
-  "Write a short poem in Malayalam",
-  "Help me build an AI app",
+  "Curious about Kathakali?",
+  "Ask about Onam.",
+  "Know any Kerala folk tales?",
+  "Malayalam or English — your call.",
+  "What's on your mind about Kerala?",
+  "Ask about Mohiniyattam.",
+  "Know Kerala's temple festivals?",
+  "Curious about backwater traditions?",
+  "Ask about a Malayalam poet.",
+  "What's a Kerala tale you love?",
+];
+
+const welcomeLabels = [
+  "Welcome to Mikav",
+  "Namaskaram, what's on your mind?",
+  "Hey there, let's talk Kerala",
+  "Good to see you",
+  "What are you exploring today?",
 ];
 
 export default function ChatPage() {
@@ -61,7 +75,7 @@ export default function ChatPage() {
       <div className="flex-1 overflow-y-auto px-4">
         <div className="mx-auto w-full max-w-3xl h-full py-4">
           <PromptSuggestions
-            label="Welcome to Mikav ✨"
+            labels={welcomeLabels}
             append={append}
             suggestions={suggestions}
           />
