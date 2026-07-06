@@ -33,7 +33,7 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: process.env.SARVAM_MODEL || "sarvam-m",
+        model: "sarvam-30b",
         messages,
       }),
     });
