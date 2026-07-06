@@ -4,12 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { PanelLeftClose, PanelLeftOpen, Plus, MessageSquare, Users } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, Plus, MessageSquare } from "lucide-react";
 import { ProfileBar } from "./shared";
 
 const navItems = [
   { label: "Chats", href: "/console/chats", icon: MessageSquare },
-  { label: "Groups", href: "/console/groups", icon: Users },
 ];
 
 export function ConsoleSidebar() {

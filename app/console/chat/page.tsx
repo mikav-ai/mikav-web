@@ -12,24 +12,25 @@ import {
 } from "@/lib/supabase/chats";
 
 const suggestions = [
-  "Curious about Kathakali?",
-  "Ask about Onam.",
-  "Know any Kerala folk tales?",
-  "Malayalam or English — your call.",
-  "What's on your mind about Kerala?",
-  "Ask about Mohiniyattam.",
-  "Know Kerala's temple festivals?",
-  "Curious about backwater traditions?",
-  "Ask about a Malayalam poet.",
-  "What's a Kerala tale you love?",
+  "What is Kathakali?",
+  "Why do we celebrate Onam?",
+  "Can you translate this to Malayalam?",
+  "Tell me a Kerala folk story?",
+  "What is Mohiniyattam?",
+  "What festivals happen at Kerala temples?",
+  "What is Theyyam?",
+  "How is Kerala Sadya served?",
+  "Who was Kumaran Asan?",
+  "What is a Malayalam proverb?",
+  "How did Kerala's backwaters shape its culture?",
 ];
 
 const welcomeLabels = [
-  "Welcome to Mikav",
-  "Namaskaram, what's on your mind?",
-  "Hey there, let's talk Kerala",
-  "Good to see you",
-  "What are you exploring today?",
+  "Namaskaram! What would you like to know about Kerala?",
+  "Namaskaram, curious about Kathakali today?",
+  "Namaskaram! Ask me anything, Malayalam or English.",
+  "Namaskaram — let's explore Kerala's culture together.",
+  "Namaskaram! What's on your mind about Kerala?",
 ];
 
 export default function ChatPage() {
@@ -94,6 +95,9 @@ export default function ChatPage() {
             placeholder="Ask Mikav anything..."
           />
         </form>
+        <p className="mt-2 text-center text-xs text-gray-400">
+          AI can make mistakes. Please verify important details.
+        </p>
       </div>
     </div>
   );

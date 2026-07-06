@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 
 interface PromptSuggestionsProps {
@@ -10,6 +10,8 @@ interface PromptSuggestionsProps {
   suggestions: string[]
   count?: number
 }
+
+const DEFAULT_COUNT = 3
 
 function pickRandom(items: string[], count: number) {
   const shuffled = [...items].sort(() => Math.random() - 0.5)
@@ -25,19 +27,21 @@ export function PromptSuggestions({
   label,
   append,
   suggestions,
-  count = 4,
+  count = DEFAULT_COUNT,
 }: PromptSuggestionsProps) {
-  const welcomeLabel = useMemo(() => {
-    if (labels && labels.length > 0) return pickOne(labels)
-    return label ?? "Welcome to Mikav"
+  // Render a deterministic value on the server (and during initial client
+  // render) so hydration matches, then randomize once mounted on the client.
+  const fallbackLabel = label ?? labels?.[0] ?? "Welcome to Mikav"
+  const [welcomeLabel, setWelcomeLabel] = useState(fallbackLabel)
+  const [visibleSuggestions, setVisibleSuggestions] = useState(() =>
+    suggestions.slice(0, count)
+  )
+
+  useEffect(() => {
+    if (labels && labels.length > 0) setWelcomeLabel(pickOne(labels))
+    setVisibleSuggestions(pickRandom(suggestions, count))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const visibleSuggestions = useMemo(
-    () => pickRandom(suggestions, count),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  )
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-8 px-4">

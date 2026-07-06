@@ -22,7 +22,6 @@ export function ChatCard({
   loading,
   onDelete,
 }: ChatCardProps) {
-  const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   if (loading) {
@@ -39,17 +38,11 @@ export function ChatCard({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!confirming) {
-      setConfirming(true);
-      return;
-    }
-
     setDeleting(true);
     try {
       await onDelete?.(id);
     } finally {
       setDeleting(false);
-      setConfirming(false);
     }
   };
 
@@ -67,30 +60,13 @@ export function ChatCard({
 
       {onDelete && (
         <div className="absolute right-3 top-3 flex items-center gap-1.5">
-          {confirming && !deleting && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setConfirming(false);
-              }}
-              className="text-xs text-gray-500 hover:text-gray-700"
-            >
-              Cancel
-            </button>
-          )}
           <button
             type="button"
             onClick={handleDeleteClick}
             disabled={deleting}
-            aria-label={confirming ? "Confirm delete" : "Delete chat"}
-            title={confirming ? "Click again to confirm delete" : "Delete chat"}
-            className={`rounded-md p-1.5 transition-colors ${
-              confirming
-                ? "bg-destructive text-destructive-foreground"
-                : "text-gray-400 opacity-0 hover:bg-gray-100 hover:text-destructive group-hover:opacity-100"
-            } disabled:opacity-60`}
+            aria-label="Delete chat"
+            title="Delete chat"
+            className="rounded-md p-1.5 text-gray-400 opacity-0 transition-colors hover:bg-gray-100 hover:text-destructive group-hover:opacity-100 disabled:opacity-60"
           >
             {deleting ? (
               <Loader2 size={14} className="animate-spin" />

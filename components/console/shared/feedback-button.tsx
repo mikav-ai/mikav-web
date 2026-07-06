@@ -14,13 +14,13 @@ export function FeedbackButton() {
     <Popover>
       <PopoverTrigger
         render={
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2 text-sm">
             <MessageSquarePlus className="h-4 w-4" />
             Feedback
           </Button>
         }
       />
-      <PopoverContent align="end" className="w-96">
+      <PopoverContent align="end" className="w-80 p-4">
         <FeedbackForm />
       </PopoverContent>
     </Popover>
