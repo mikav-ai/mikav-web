@@ -83,27 +83,9 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to the auth login page.
 
-### Environment Variables
-
-Copy `.env.example` to `.env.local` and configure:
-
-| Variable | Description |
-|----------|-------------|
-| `NEXT_PUBLIC_APP_URL` | Public app URL (default: http://localhost:3000) |
-| `NEXT_PUBLIC_APP_NAME` | App display name |
-| `NEXT_PUBLIC_API_URL` | Backend API URL |
-| `API_SECRET_KEY` | Server-side API secret |
-| `AUTH_SECRET` | Authentication secret |
-| `AUTH_URL` | Auth callback URL |
-| `DATABASE_URL` | Database connection string |
-| `MIKAV_MODEL_API_URL` | Mikav model inference endpoint |
-| `MIKAV_MODEL_API_KEY` | Mikav model API key |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable (anon) key |
-
 ### Database setup (Supabase)
 
-Apply the SQL migrations in `supabase/migrations/` in order (0001 → 0006) via the Supabase SQL Editor or CLI. See [supabase/README.md](supabase/README.md) for details.
+Apply the SQL migrations in `supabase/migrations/` in order (01 → 03) via the Supabase SQL Editor or CLI. See [supabase/README.md](supabase/README.md) for details.
 
 ## Project Structure
 

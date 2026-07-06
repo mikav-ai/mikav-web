@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -12,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createClient } from "@/lib/supabase/client";
 
 interface FeedbackFormProps {
   onSubmit?: (data: FeedbackData) => void;
@@ -19,80 +19,97 @@ interface FeedbackFormProps {
 
 interface FeedbackData {
   type: string;
-  subject: string;
   message: string;
-  rating: string;
 }
 
-export function FeedbackForm({ onSubmit }: FeedbackFormProps) {
-  const [type, setType] = useState("");
-  const [subject, setSubject] = useState("");
-  const [message, setMessage] = useState("");
-  const [rating, setRating] = useState("");
+const feedbackTypeLabels: Record<string, string> = {
+  general: "General",
+  suggestion: "Suggestion",
+  bug: "Bug Report",
+  compliment: "Compliment",
+};
 
-  const handleSubmit = (e: React.FormEvent) => {
+export function FeedbackForm({ onSubmit }: FeedbackFormProps) {
+  const [type, setType] = useState("general");
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit?.({ type, subject, message, rating });
+    setIsSubmitting(true);
+    setStatus("idle");
+    setErrorMessage(null);
+
+    try {
+      const supabase = createClient();
+      const { data: userData } = await supabase.auth.getUser();
+
+      const { error } = await supabase.from("feedback").insert({
+        user_id: userData?.user?.id ?? null,
+        type,
+        subject: type,
+        message,
+      });
+
+      if (error) throw error;
+
+      onSubmit?.({ type, message });
+      setStatus("success");
+      setType("general");
+      setMessage("");
+    } catch (error) {
+      setStatus("error");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Failed to submit feedback."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="feedback-type">Feedback Type</Label>
-        <Select value={type} onValueChange={(v) => setType(v ?? "")}>
-          <SelectTrigger id="feedback-type">
-            <SelectValue placeholder="Select type" />
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div className="space-y-1.5">
+        <Label htmlFor="feedback-type" className="text-xs">Type</Label>
+        <Select value={type} onValueChange={(v) => setType(v ?? "general")}>
+          <SelectTrigger id="feedback-type" className="h-11 w-full text-sm">
+            <SelectValue placeholder="Type">
+              {(value: string) => feedbackTypeLabels[value] ?? "Type"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="general">General</SelectItem>
             <SelectItem value="suggestion">Suggestion</SelectItem>
             <SelectItem value="bug">Bug Report</SelectItem>
             <SelectItem value="compliment">Compliment</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="feedback-rating">Rating</Label>
-        <Select value={rating} onValueChange={(v) => setRating(v ?? "")}>
-          <SelectTrigger id="feedback-rating">
-            <SelectValue placeholder="Rate your experience" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="5">Excellent</SelectItem>
-            <SelectItem value="4">Good</SelectItem>
-            <SelectItem value="3">Average</SelectItem>
-            <SelectItem value="2">Poor</SelectItem>
-            <SelectItem value="1">Very Poor</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="feedback-subject">Subject</Label>
-        <Input
-          id="feedback-subject"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          placeholder="Brief summary"
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="feedback-message">Message</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="feedback-message" className="text-xs">Message</Label>
         <Textarea
           id="feedback-message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Tell us more..."
-          rows={5}
+          placeholder="Share your feedback..."
+          rows={6}
+          className="text-sm"
           required
         />
       </div>
 
-      <Button type="submit" className="w-full">
-        Submit Feedback
+      {status === "success" && (
+        <p className="text-xs text-green-600">Thanks for your feedback!</p>
+      )}
+      {status === "error" && (
+        <p className="text-xs text-destructive">{errorMessage}</p>
+      )}
+
+      <Button type="submit" size="sm" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? "Submitting..." : "Submit"}
       </Button>
     </form>
   );

@@ -1,11 +1,23 @@
 -- ============================================================
--- 0001_profiles.sql
--- User profiles linked to Supabase auth.users
+-- 01_auth.sql
+-- Auth-related schema: profiles, auto-create trigger, updated_at
 -- ============================================================
+
+-- Shared trigger function to auto-update updated_at columns
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
 
 -- Sequence backing the human-readable unique user id
 create sequence if not exists public.user_id_seq start with 100000;
 
+-- Profiles
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   -- Auto-assigned, unique, human-readable public identifier e.g. "MIKAV-100001"
@@ -23,7 +35,6 @@ comment on column public.profiles.user_id is 'Auto-assigned unique public user i
 
 create index if not exists profiles_user_id_idx on public.profiles (user_id);
 
--- Row Level Security
 alter table public.profiles enable row level security;
 
 drop policy if exists "Profiles are viewable by the owner" on public.profiles;
@@ -40,6 +51,11 @@ drop policy if exists "Users can update their own profile" on public.profiles;
 create policy "Users can update their own profile"
   on public.profiles for update
   using (auth.uid() = id);
+
+drop trigger if exists set_profiles_updated_at on public.profiles;
+create trigger set_profiles_updated_at
+  before update on public.profiles
+  for each row execute function public.set_updated_at();
 
 -- Auto-create a profile row when a new auth user signs up
 create or replace function public.handle_new_user()

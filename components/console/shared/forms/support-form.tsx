@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createClient } from "@/lib/supabase/client";
 
 interface SupportFormProps {
   onSubmit?: (data: SupportData) => void;
@@ -25,16 +26,69 @@ interface SupportData {
   email: string;
 }
 
+const categoryLabels: Record<string, string> = {
+  account: "Account",
+  billing: "Billing",
+  technical: "Technical Issue",
+  feature: "Feature Request",
+  other: "Other",
+};
+
+const priorityLabels: Record<string, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  critical: "Critical",
+};
+
 export function SupportForm({ onSubmit }: SupportFormProps) {
   const [category, setCategory] = useState("");
   const [priority, setPriority] = useState("");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit?.({ category, priority, subject, description, email });
+    setIsSubmitting(true);
+    setStatus("idle");
+    setErrorMessage(null);
+
+    try {
+      const supabase = createClient();
+      const { data: userData } = await supabase.auth.getUser();
+
+      const { error } = await supabase.from("support_requests").insert({
+        user_id: userData?.user?.id ?? null,
+        email,
+        category,
+        priority: priority || "medium",
+        subject,
+        description,
+      });
+
+      if (error) throw error;
+
+      onSubmit?.({ category, priority, subject, description, email });
+      setStatus("success");
+      setCategory("");
+      setPriority("");
+      setSubject("");
+      setDescription("");
+      setEmail("");
+    } catch (error) {
+      setStatus("error");
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Failed to submit support request."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -54,8 +108,10 @@ export function SupportForm({ onSubmit }: SupportFormProps) {
       <div className="space-y-2">
         <Label htmlFor="support-category">Category</Label>
         <Select value={category} onValueChange={(v) => setCategory(v ?? "")}>
-          <SelectTrigger id="support-category">
-            <SelectValue placeholder="Select category" />
+          <SelectTrigger id="support-category" className="h-11 w-full">
+            <SelectValue placeholder="Select category">
+              {(value: string) => categoryLabels[value] ?? "Select category"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="account">Account</SelectItem>
@@ -70,8 +126,10 @@ export function SupportForm({ onSubmit }: SupportFormProps) {
       <div className="space-y-2">
         <Label htmlFor="support-priority">Priority</Label>
         <Select value={priority} onValueChange={(v) => setPriority(v ?? "")}>
-          <SelectTrigger id="support-priority">
-            <SelectValue placeholder="Select priority" />
+          <SelectTrigger id="support-priority" className="h-11 w-full">
+            <SelectValue placeholder="Select priority">
+              {(value: string) => priorityLabels[value] ?? "Select priority"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="low">Low</SelectItem>
@@ -100,13 +158,22 @@ export function SupportForm({ onSubmit }: SupportFormProps) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Describe your issue in detail..."
-          rows={5}
+          rows={8}
           required
         />
       </div>
 
-      <Button type="submit" className="w-full">
-        Submit Support Request
+      {status === "success" && (
+        <p className="text-sm text-green-600">
+          Thanks! Your support request has been submitted.
+        </p>
+      )}
+      {status === "error" && (
+        <p className="text-sm text-destructive">{errorMessage}</p>
+      )}
+
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? "Submitting..." : "Submit Support Request"}
       </Button>
     </form>
   );

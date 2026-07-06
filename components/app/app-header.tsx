@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function AppHeader() {
   return (
-    <header className="flex items-center justify-between h-14 px-6 border-b border-gray-200 bg-white">
+    <header className="flex items-center justify-between h-14 px-8 sm:px-12 border-b border-gray-200 bg-white">
       <Link href="/" className="flex items-center gap-2">
         <Image
           src="/icons/app/icon-dark.png"

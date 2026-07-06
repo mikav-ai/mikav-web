@@ -10,6 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export default function SignupPage() {
   return (
@@ -40,21 +42,32 @@ export default function SignupPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               placeholder="••••••••"
               required
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirm-password">Confirm Password</Label>
-            <Input
+            <PasswordInput
               id="confirm-password"
-              type="password"
               placeholder="••••••••"
               required
             />
+          </div>
+          <div className="flex items-start gap-2">
+            <Checkbox id="terms" className="mt-0.5" required />
+            <Label htmlFor="terms" className="text-sm font-normal leading-snug">
+              I agree to the{" "}
+              <Link href="/terms" className="text-primary hover:underline">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" className="text-primary hover:underline">
+                Privacy Policy
+              </Link>
+            </Label>
           </div>
           <Button type="submit" className="w-full">
             Create account

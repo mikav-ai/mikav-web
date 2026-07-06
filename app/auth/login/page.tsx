@@ -10,6 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export default function LoginPage() {
   return (
@@ -39,12 +41,17 @@ export default function LoginPage() {
                 Forgot password?
               </Link>
             </div>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               placeholder="••••••••"
               required
             />
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox id="remember-me" />
+            <Label htmlFor="remember-me" className="text-sm font-normal">
+              Remember me
+            </Label>
           </div>
           <Button type="submit" className="w-full">
             Sign in

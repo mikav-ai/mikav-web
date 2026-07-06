@@ -7,18 +7,15 @@ Database schema and SQL migrations for Mikav.
 ```
 supabase/
 ├── migrations/
-│   ├── 0001_profiles.sql          # User profiles + auto-create trigger
-│   ├── 0002_updated_at.sql        # Shared updated_at trigger function
-│   ├── 0003_chats.sql             # Chats + messages
-│   ├── 0004_groups.sql            # Groups + group members
-│   ├── 0005_feedback_support.sql  # Feedback + support requests
-│   └── 0006_storage.sql           # Storage buckets + policies
+│   ├── 01_auth.sql       # Profiles, auto-create trigger, updated_at helper
+│   ├── 02_database.sql   # Chats, messages, groups, feedback, support requests
+│   └── 03_storage.sql    # Storage buckets + policies
 └── README.md
 ```
 
 ## Applying migrations
 
-Run the SQL files **in order** (0001 → 0006). Choose one method:
+Run the SQL files **in order** (01 → 03). Choose one method:
 
 ### Option A — Supabase SQL Editor
 
@@ -30,7 +27,7 @@ Run the SQL files **in order** (0001 → 0006). Choose one method:
 
 ```bash
 # Link to your project (once)
-supabase link --project-ref hjjjlyphgvwfwytfrlrc
+supabase link --project-ref <your-project-ref>
 
 # Push all migrations
 supabase db push
@@ -38,23 +35,23 @@ supabase db push
 
 ## Schema overview
 
-| Table | Purpose |
-|-------|---------|
-| `profiles` | Public profile per auth user (auto-created on signup, with unique auto-assigned `user_id`) |
-| `chats` | Chat conversations owned by a user |
-| `messages` | Messages within a chat (user/assistant/system) |
-| `groups` | Groups users can create and join |
-| `group_members` | Group membership with roles |
-| `feedback` | User feedback submissions |
-| `support_requests` | User support tickets |
+| Table | Migration | Purpose |
+|-------|-----------|---------|
+| `profiles` | 01 | Public profile per auth user (auto-created on signup, with unique auto-assigned `user_id`) |
+| `chats` | 02 | Chat conversations owned by a user |
+| `messages` | 02 | Messages within a chat (user/assistant/system) |
+| `groups` | 02 | Groups users can create and join |
+| `group_members` | 02 | Group membership with roles |
+| `feedback` | 02 | User feedback submissions |
+| `support_requests` | 02 | User support tickets |
 
 ## Storage buckets
 
-| Bucket | Access | Purpose |
-|--------|--------|---------|
-| `avatars` | Public read | User profile pictures |
-| `attachments` | Private | Chat file attachments |
-| `user-uploads` | Private | General-purpose user files |
+| Bucket | Migration | Access | Purpose |
+|--------|-----------|--------|---------|
+| `avatars` | 03 | Public read | User profile pictures |
+| `attachments` | 03 | Private | Chat file attachments |
+| `user-uploads` | 03 | Private | General-purpose user files |
 
 ## Notes
 
@@ -62,5 +59,5 @@ supabase db push
 - Policies scope data access to the authenticated user (`auth.uid()`).
 - `profiles` rows are created automatically via the `on_auth_user_created` trigger.
 - Every user gets a unique, auto-assigned public `user_id` (e.g. `MIKAV-100001`) generated from a sequence, separate from the internal `id` (UUID).
-- The `set_updated_at()` function keeps `updated_at` columns current.
-- Migration `0002` must run before `0003`–`0005` (they depend on `set_updated_at`).
+- The `set_updated_at()` function (defined in `01_auth.sql`) keeps `updated_at` columns current across all tables.
+- `02_database.sql` and `03_storage.sql` depend on objects created in `01_auth.sql` — always run in order.
