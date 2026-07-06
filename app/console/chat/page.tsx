@@ -19,7 +19,7 @@ export default function ChatPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const respond = useCallback((content: string) => {
+  const respond = useCallback(async (content: string) => {
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: "user",
@@ -27,24 +27,50 @@ export default function ChatPage() {
       createdAt: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const nextMessages = [...messages, userMessage];
+    setMessages(nextMessages);
     setIsGenerating(true);
 
-    // TODO: integrate with Mikav API
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: nextMessages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
+
+      const data = await res.json();
+
       setMessages((prev) => [
         ...prev,
         {
           id: crypto.randomUUID(),
           role: "assistant",
-          content:
-            "This is a placeholder response. Connect to the Mikav API to get real responses.",
+          content: res.ok
+            ? data.content || "No response received."
+            : `Error: ${data.error || "Something went wrong."}`,
           createdAt: new Date(),
         },
       ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: "Failed to reach Mikav. Please try again.",
+          createdAt: new Date(),
+        },
+      ]);
+    } finally {
       setIsGenerating(false);
-    }, 1000);
-  }, []);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
 
   const handleSubmit = (event?: { preventDefault?: () => void }) => {
     event?.preventDefault?.();
