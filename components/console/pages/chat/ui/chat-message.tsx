@@ -85,7 +85,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       <div
         className={cn(chatBubbleVariants({ isUser, animation }), className)}
       >
-        <MarkdownRenderer>{content}</MarkdownRenderer>
+        <MarkdownRenderer
+          className={isUser ? "prose-invert [&_*]:text-white" : undefined}
+        >
+          {content}
+        </MarkdownRenderer>
         {actions && !isUser && (
           <div className="absolute -bottom-4 right-2 flex space-x-1 rounded-lg border bg-background p-1 text-foreground opacity-0 transition-opacity group-hover/message:opacity-100">
             {actions}
